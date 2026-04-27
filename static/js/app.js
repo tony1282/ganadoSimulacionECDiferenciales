@@ -103,25 +103,23 @@ function mostrarResultados(json, precioKg, costoDia) {
   const costoTotal = diaVenta  * costoDia;
   const ganancia   = ingreso - costoTotal;
 
-  // ─── DATOS MEJOR DÍA ─────────────────────────
-  const mejorDia = json.resultado.mejor_dia;
-  const mejorPeso = json.resultado.peso[mejorDia];
+  const mejorDia      = json.resultado.mejor_dia;
+  const mejorPeso     = json.resultado.peso[mejorDia];
   const mejorGanancia = json.resultado.mejor_utilidad;
-
-  // ✅ FIX IMPORTANTE
-  const costoMejor = (mejorDia) * costoDia;
+  const costoMejor    = mejorDia * costoDia;
 
   // Badge de estado
   const badge = document.getElementById('status-badge');
   badge.textContent = estado;
   badge.className = 'status-badge';
-  if (estado.includes('rápida'))   badge.classList.add('rapida');
-  else if (estado.includes('No'))  badge.classList.add('warning');
-  else                             badge.classList.add('normal');
+  if (estado.includes('rápida'))          badge.classList.add('rapida');
+  else if (estado.includes('No'))         badge.classList.add('warning');
+  else if (estado.includes('anticipada')) badge.classList.add('warning');
+  else                                    badge.classList.add('normal');
 
   // Métricas
-  document.getElementById('res-dia').textContent    = fmt(diaVenta);
-  document.getElementById('res-peso').textContent   = fmt(pesoVenta, 1) + ' kg';
+  document.getElementById('res-dia').textContent     = fmt(diaVenta);
+  document.getElementById('res-peso').textContent    = fmt(pesoVenta, 1) + ' kg';
   document.getElementById('res-ingreso').textContent = fmtMoney(ingreso);
   document.getElementById('res-ingreso-sub').textContent = `${fmt(pesoVenta, 1)} kg × ${fmtMoney(precioKg)}`;
 
@@ -131,16 +129,16 @@ function mostrarResultados(json, precioKg, costoDia) {
   document.getElementById('res-costo-sub').textContent = `Costo total: ${fmtMoney(costoTotal)}`;
 
   // OBJETIVO
-  document.getElementById('obj-dia').textContent = fmt(diaVenta);
-  document.getElementById('obj-peso').textContent = fmt(pesoVenta, 1) + ' kg';
+  document.getElementById('obj-dia').textContent      = fmt(diaVenta);
+  document.getElementById('obj-peso').textContent     = fmt(pesoVenta, 1) + ' kg';
   document.getElementById('obj-ganancia').textContent = fmtMoney(ganancia);
-  document.getElementById('obj-costo').textContent = fmtMoney(costoTotal);
+  document.getElementById('obj-costo').textContent    = fmtMoney(costoTotal);
 
   // MEJOR DÍA
-  document.getElementById('mejor-dia').textContent = fmt(mejorDia);
-  document.getElementById('mejor-peso').textContent = fmt(mejorPeso, 1) + ' kg';
+  document.getElementById('mejor-dia').textContent      = fmt(mejorDia);
+  document.getElementById('mejor-peso').textContent     = fmt(mejorPeso, 1) + ' kg';
   document.getElementById('mejor-ganancia').textContent = fmtMoney(mejorGanancia);
-  document.getElementById('mejor-costo').textContent = fmtMoney(costoMejor);
+  document.getElementById('mejor-costo').textContent    = fmtMoney(costoMejor);
 
   // DIFERENCIA
   const diff = mejorGanancia - ganancia;
@@ -165,10 +163,10 @@ async function simular() {
 
   const { peso_inicial, peso_objetivo, costo_dia, precio_kg } = vals;
 
-  const tipo = document.getElementById('tipo').value;
-  const genetica = parseFloat(document.getElementById('genetica').value);
+  const tipo         = document.getElementById('tipo').value;
+  const genetica     = parseFloat(document.getElementById('genetica').value);
   const alimentacion = parseFloat(document.getElementById('alimentacion').value);
-  const manejo = parseFloat(document.getElementById('manejo').value);
+  const manejo       = parseFloat(document.getElementById('manejo').value);
 
   const btn = document.getElementById('btn-simular');
   btn.disabled = true;
@@ -209,8 +207,8 @@ async function simular() {
   mostrarResultados(json, precio_kg, costo_dia);
 
   // ─── Gráfica ─────────────────────────
-  const pesos = json.resultado.peso;
-  const tiempo = json.resultado.tiempo;
+  const pesos    = json.resultado.peso;
+  const tiempo   = json.resultado.tiempo;
   const diaVenta = json.venta.dia;
   const mejorDia = json.resultado.mejor_dia;
 
@@ -219,107 +217,91 @@ async function simular() {
 
   if (chart) chart.destroy();
 
-chart = new Chart(document.getElementById('grafica'), {
-  type: 'line',
-
-  data: {
-    labels: tiempo,
-    datasets: [
-      {
-        label: 'Peso',
-        data: pesos,
-        borderColor: '#2E7D32',
-        backgroundColor: 'rgba(46,125,50,0.2)',
-        fill: true,
-        tension: 0.3,
-        pointRadius: 0
-      },
-      {
-        label: 'Objetivo',
-        data: tiempo.map(() => peso_objetivo),
-        borderColor: '#C0501A',
-        borderDash: [5, 5],
-        fill: false,
-        pointRadius: 0
-      },
-      {
-        label: 'Venta',
-        data: ventaPlot,
-        borderColor: '#1565C0',
-        backgroundColor: '#1565C0',
-        pointRadius: 6,
-        showLine: false
-      },
-      {
-        label: 'Mejor venta',
-        data: mejorPlot,
-        pointRadius: 6,
-        backgroundColor: '#FFD700',
-        showLine: false
-      }
-    ]
-  },
-
-  // 🔥 AQUÍ VA EXACTAMENTE
-  options: {
-    responsive: true,
-    maintainAspectRatio: false,
-
-    interaction: {
-      mode: 'index',
-      intersect: false
+  chart = new Chart(document.getElementById('grafica'), {
+    type: 'line',
+    data: {
+      labels: tiempo,
+      datasets: [
+        {
+          label: 'Peso',
+          data: pesos,
+          borderColor: '#2E7D32',
+          backgroundColor: 'rgba(46,125,50,0.2)',
+          fill: true,
+          tension: 0.3,
+          pointRadius: 0
+        },
+        {
+          label: 'Objetivo',
+          data: tiempo.map(() => peso_objetivo),
+          borderColor: '#C0501A',
+          borderDash: [5, 5],
+          fill: false,
+          pointRadius: 0
+        },
+        {
+          label: 'Venta',
+          data: ventaPlot,
+          borderColor: '#1565C0',
+          backgroundColor: '#1565C0',
+          pointRadius: 6,
+          showLine: false
+        },
+        {
+          label: 'Mejor venta',
+          data: mejorPlot,
+          pointRadius: 6,
+          backgroundColor: '#FFD700',
+          showLine: false
+        }
+      ]
     },
-
-    plugins: {
-      legend: {
-        labels: {
-          color: '#e8f5e0',
-          font: {
-            size: 12,
-            weight: 'bold'
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: {
+        mode: 'index',
+        intersect: false
+      },
+      plugins: {
+        legend: {
+          labels: {
+            color: '#e8f5e0',
+            font: { size: 12, weight: 'bold' }
           }
+        },
+        tooltip: {
+          backgroundColor: '#1a2e1a',
+          titleColor: '#A8D890',
+          bodyColor: '#e8f5e0',
+          borderColor: '#2daa2d',
+          borderWidth: 1
         }
       },
-      tooltip: {
-        backgroundColor: '#1a2e1a',
-        titleColor: '#A8D890',
-        bodyColor: '#e8f5e0',
-        borderColor: '#2d4a2d',
-        borderWidth: 1
-      }
-    },
-
-    scales: {
-      x: {
-        title: {
-          display: true,
-          text: 'Días',
-          color: '#6a8a6a',
-          font: { weight: 'bold' }
+      scales: {
+        x: {
+          title: {
+            display: true,
+            text: 'Días',
+            color: '#6a8a6a',
+            font: { weight: 'bold' }
+          },
+          ticks: { color: '#6a8a6a' },
+          grid:  { color: 'rgba(100,120,100,0.2)' }
         },
-        ticks: {
-          color: '#6a8a6a'
-        },
-        grid: {
-          color: 'rgba(100,120,100,0.2)'
+        y: {
+          title: {
+            display: true,
+            text: 'Peso (kg)',
+            color: '#6a8a6a',
+            font: { weight: 'bold' }
+          },
+          ticks: { color: '#6a8a6a' },
+          grid:  { color: 'rgba(100,120,100,0.2)' },
+          beginAtZero: false,
+          suggestedMax: Math.max(...pesos, peso_objetivo) * 1.08,
         }
-      },
-      y: {
-        title: {
-          display: true,
-          text: 'Peso (kg)',
-          color: '#6a8a6a',
-          font: { weight: 'bold' }
-        },
-        ticks: {
-          color: '#6a8a6a'
-        },
-        grid: {
-          color: 'rgba(100,120,100,0.2)'
-        },
-        beginAtZero: false
       }
     }
-  }
-});
+  });
 }
